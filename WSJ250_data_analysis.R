@@ -137,3 +137,4 @@ decline %>%
   ggtitle("Top 10 Companies by Decline from 2019") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+#df
