@@ -36,7 +36,7 @@ industry %>%
 # What is the industry average and standard deviation for various rating-scales?
 industry_average <- df %>% 
   group_by(sector) %>% 
-  summarise(employee_engagement_and_development_average = mean(employee_engagement_and_development), 
+  summarise(employee_engagement_and_development_mean = mean(employee_engagement_and_development), 
             employee_engagement_and_development_sd = sd(employee_engagement_and_development),
             innovation_mean = mean(innovation), innovation_sd = sd(innovation),
             customer_satisfaction_mean = mean(customer_satisfaction),
@@ -64,8 +64,8 @@ cus_sat %>%
 
 # employee_engagement_and_development
 industry_average %>% 
-  mutate(sector = reorder(sector, employee_engagement_and_development_average, decreasing = TRUE)) %>% 
-  ggplot(aes(sector, employee_engagement_and_development_average)) +
+  mutate(sector = reorder(sector, employee_engagement_and_development_mean, decreasing = TRUE)) %>% 
+  ggplot(aes(sector, employee_engagement_and_development_mean)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 90))
 
@@ -137,4 +137,52 @@ decline %>%
   ggtitle("Top 10 Companies by Decline from 2019") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-#df
+# Is there an industry-wide trend in growth or decline?
+# growth
+growth_sector <- growth %>% 
+  group_by(sector) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  rename(no_of_companies = n)
+
+growth_sector %>% 
+  head(10) %>% 
+  ggplot() +
+  geom_col(aes(reorder(sector, no_of_companies, decreasing = TRUE), no_of_companies)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# financial services
+finance <- df %>% # 21 grew and 9 declined
+  filter(sector == "Financial Services")
+
+finance %>% # 12 finance companies ranked in Top 100
+  filter(rank <= 100) %>% 
+  count()
+
+finance_iv <- industry_average %>% 
+  filter(sector == "Financial Services") %>% 
+  gather(key = rating_scale, value = avg_rating, employee_engagement_and_development_mean:overall_score_sd) %>% 
+  select(!sector) %>% 
+  filter(grepl("mean$", rating_scale)) %>% 
+  filter(rating_scale != "overall_score_mean")
+
+finance_iv %>% ggplot() +
+  geom_col(aes(rating_scale, avg_rating)) +
+  ggtitle("Finance Industry") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# decline
+declining_sector <- decline %>% 
+  group_by(sector) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  rename(no_of_companies = n)
+
+declining_sector %>% 
+  head(10) %>% 
+  ggplot() +
+  geom_col(aes(reorder(sector, no_of_companies, decreasing = TRUE), no_of_companies)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+
