@@ -185,4 +185,6 @@ declining_sector %>%
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Technology
+# why is this not working
+
 
