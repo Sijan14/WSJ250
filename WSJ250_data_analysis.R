@@ -184,5 +184,5 @@ declining_sector %>%
   geom_col(aes(reorder(sector, no_of_companies, decreasing = TRUE), no_of_companies)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-
+# Technology
 
