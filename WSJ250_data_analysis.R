@@ -2,11 +2,13 @@ install.packages("tidyverse")
 install.packages("ggplot2")
 install.packages("forcats")
 install.packages("data.table")
+install.packages("caret")
 library(tidyverse)
 library(ggplot2)
 library(forcats)
 library(stringr)
 library(data.table)
+library(caret)
 
 setwd("/Users/sijanikbal/Documents/JUST Capital/Data Project 1")
 df <- read_csv("wsj_250_best-managed_companies.csv")
@@ -184,5 +186,46 @@ declining_sector %>%
   geom_col(aes(reorder(sector, no_of_companies, decreasing = TRUE), no_of_companies)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+technology_iv <- industry_average %>% 
+  filter(sector == "Technology") %>% 
+  gather(key = rating_scale, value = avg_rating, employee_engagement_and_development_mean:overall_score_sd) %>% 
+  select(!sector) %>% 
+  filter(grepl("mean$", rating_scale)) %>% 
+  filter(rating_scale != "overall_score_mean")
 
+technology_iv %>% ggplot() +
+  geom_col(aes(rating_scale, avg_rating)) +
+  ggtitle("Technology industry") + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# not any notable trend in technology industry
+
+# Machine Learning to determine weights of the specific scales and predicting overall score
+
+# Splitting the dataset
+set.seed(2023)
+
+trainIndex <- createDataPartition(df$overall_score, p = 0.7, list = FALSE, times = 1)
+train <- df[trainIndex, ]
+test <- df[-trainIndex, ]
+
+logit_train <- polr(as_factor(JobSatisfaction) ~ ., data = train)
+
+test$pred_logit <- predict(logit_train, test, type = "class")
+confusionMatrix(as_factor(test$JobSatisfaction), as_factor(test$pred_logit))
+# Linear regression
+names(df)
+lm_train <- lm(overall_score ~ customer_satisfaction + 
+                 employee_engagement_and_development + 
+                 social_responsibility +
+                 financial_strength +
+                 innovation, data = train)
+print(lm_train)
+summary(lm_train)
+# This suggests that innovation has the highest weight out of all the IV as it has higher Beta value
+# R squared value suggests that the rating scales explains 80% of the variances in the overall_score
+
+test$pred_overall_score <- predict(lm_train, test)
+
+# linear regression using cross-validation
 
