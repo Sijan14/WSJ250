@@ -228,4 +228,18 @@ summary(lm_train)
 test$pred_overall_score <- predict(lm_train, test)
 
 # linear regression using cross-validation
+train_control <- trainControl(method = "repeatedcv", number = 5, repeats = 3)
+
+model_kfold_lm <- train(overall_score ~ customer_satisfaction + 
+                          employee_engagement_and_development + 
+                          social_responsibility +
+                          financial_strength +
+                          innovation,
+                        data = train,
+                        trControl = train_control,
+                        method = "lm")
+print(model_kfold_lm)
+# cross validation supports our previous model as the R squared value is 0.813
+
+
 
