@@ -9,6 +9,7 @@ library(forcats)
 library(stringr)
 library(data.table)
 library(caret)
+library(nnet)
 
 setwd("/Users/sijanikbal/Documents/JUST Capital/Data Project 1")
 df <- read_csv("wsj_250_best-managed_companies.csv")
@@ -209,10 +210,6 @@ trainIndex <- createDataPartition(df$overall_score, p = 0.7, list = FALSE, times
 train <- df[trainIndex, ]
 test <- df[-trainIndex, ]
 
-logit_train <- polr(as_factor(JobSatisfaction) ~ ., data = train)
-
-test$pred_logit <- predict(logit_train, test, type = "class")
-confusionMatrix(as_factor(test$JobSatisfaction), as_factor(test$pred_logit))
 # Linear regression
 names(df)
 lm_train <- lm(overall_score ~ customer_satisfaction + 
@@ -240,6 +237,3 @@ model_kfold_lm <- train(overall_score ~ customer_satisfaction +
                         method = "lm")
 print(model_kfold_lm)
 # cross validation supports our previous model as the R squared value is 0.813
-
-
-
