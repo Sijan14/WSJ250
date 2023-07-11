@@ -2,29 +2,93 @@
 title: "Rmarkdown_WSJ250"
 author: "Sijan"
 date: "2023-07-11"
-output: pdf_document
+output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r packages, include=FALSE}
+library(tidyverse)
+library(ggplot2)
+library(forcats)
+library(stringr)
+library(data.table)
+library(caret)
+library(nnet)
 ```
 
-## R Markdown
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r loading_doc, include=FALSE}
+df <- read_csv("wsj_250_best-managed_companies.csv")
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+### Which are the top ten companies in this ranking?
+```{r, echo=FALSE}
+top_ten <- df %>% 
+  subset(rank <=10)
+top_ten
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+### How many industries are included in this ranking?
+
+The industries with the highest number of companies included in the top 250 are shown below - 
+```{r, echo=FALSE}
+df %>% 
+  group_by(sector) %>% 
+  count() %>% 
+  arrange(desc(n)) %>% 
+  head(10)
+```
+There are total 22 industries that are included in this ranking. The industry that has the most number of companies is Technology with 46 companies.
+
+The industries with the lowest number of companies included in the top 250 are shown below - 
+```{r, echo=FALSE}
+df %>% 
+  group_by(sector) %>% 
+  count() %>% 
+  arrange(n) %>% 
+  head(10)
+```
+### Does the overall_score differ across various industries?
+```{r, echo=FALSE}
+industry <- df %>% 
+  group_by(sector) %>% 
+  summarise(industry_average_overall_score = mean(overall_score)) %>% 
+  arrange(desc(industry_average_overall_score))
+
+industry %>% 
+  mutate(sector = fct_reorder(sector, industry_average_overall_score)) %>% 
+  ggplot(aes(industry_average_overall_score, sector)) +
+  geom_point() +
+  xlab("Industry average") +
+  ggtitle("Mean Overall Score by Industry")
+```
+
+The above point graph suggest that the overall_score do vary based on the industry. Technology and healthcare industry seemed to have higher overall_score on average, while automobile and multiutilites have the lowest average overall_score. But it's important to note that multiutilities and automobiles only have one company represented from their respective industry. Due to low sample size, we cannot confidently say that these industries have a low overall_score on average.
+
+### What is the industry average and standard deviation for various rating-scales?
+
+```{r, echo=FALSE}
+industry_average <- df %>% 
+  group_by(sector) %>% 
+  summarise(engagement_mean = mean(employee_engagement_and_development), 
+            engagement_sd = sd(employee_engagement_and_development),
+            innovation_mean = mean(innovation), innovation_sd = sd(innovation),
+            cus_sat_mean = mean(customer_satisfaction),
+            cus_sat_sd = sd(customer_satisfaction),
+            soc_res_mean = mean(social_responsibility),
+            soc_res_sd = sd(social_responsibility),
+            fin_str_mean = mean(financial_strength),
+            fin_str_sd = sd(financial_strength),
+            overall_score_mean = mean(overall_score),
+            overall_score_sd = sd(overall_score))
+```
+
+Employee engagement & development scale
+```{r}
+industry_average %>% 
+  ggplot(aes(x = sector, y = engagement_mean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = engagement_mean - engagement_sd,
+                    ymax = engagement_mean + engagement_sd)) +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
