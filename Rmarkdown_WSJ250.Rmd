@@ -27,6 +27,16 @@ top_ten <- df %>%
 top_ten
 ```
 
+```{r, eval=FALSE}
+df$sector <- recode(df$sector,
+                    "Automobile" = "Automotive", "Automotive/Vehicles" = "Automotive",
+                    "Multiutilities" = "Utilities")
+df %>% group_by(sector) %>% 
+  count() %>% 
+  print(n = 19)
+```
+Initially there was a total of 22 industries in this data set. After careful observation, I noticed some industries that are similar but coded differently. After recoding those industries the total number of industry is 19.
+
 ### How many industries are included in this ranking?
 
 The industries with the highest number of companies included in the top 250 are shown below - 
@@ -37,7 +47,7 @@ df %>%
   arrange(desc(n)) %>% 
   head(10)
 ```
-There are total 22 industries that are included in this ranking. The industry that has the most number of companies is Technology with 46 companies.
+There are total 19 industries that are included in this ranking. The industry that has the most number of companies is Technology with 46 companies.
 
 The industries with the lowest number of companies included in the top 250 are shown below - 
 ```{r, echo=FALSE}
@@ -47,6 +57,7 @@ df %>%
   arrange(n) %>% 
   head(10)
 ```
+
 ### Does the overall_score differ across various industries?
 ```{r, echo=FALSE}
 industry <- df %>% 
@@ -82,13 +93,52 @@ industry_average <- df %>%
             overall_score_sd = sd(overall_score))
 ```
 
-Employee engagement & development scale
-```{r}
+
+### What's the industry-wide trend for various rating scales?
+
+Employee engagement & development
+```{r, echo=FALSE}
 industry_average %>% 
+  mutate(sector = reorder(sector, engagement_mean, decreasing = TRUE)) %>% 
   ggplot(aes(x = sector, y = engagement_mean)) +
   geom_col() +
   geom_errorbar(aes(ymin = engagement_mean - engagement_sd,
-                    ymax = engagement_mean + engagement_sd)) +
-  theme(axis.text.x = element_text(angle = 90))
+                    ymax = engagement_mean + engagement_sd,
+                    width = 0.5)) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Employee engagement") +
+  xlab("Industry")
 ```
+Utilities has the highest average rating for employee engagement and development. While technology, health care and transportation doesn't have the highest average rating, their standard deviation is pretty large, which indicates that some companies in that sector has a higher rating than utilities industry.
+
+Customer Satisfaction
+```{r, echo=FALSE}
+industry_average %>% 
+  mutate(sector = reorder(sector, cus_sat_mean, decreasing = TRUE)) %>% 
+  ggplot(aes(x = sector, y = cus_sat_mean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = cus_sat_mean - cus_sat_sd,
+                    ymax = cus_sat_mean + cus_sat_sd,
+                    width = 0.5)) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Customer Satisfaction") +
+  xlab("Industry")
+```
+The above figure indicates that Oil & Gas industry has the highest average customer satisfaction followed by automotive industry. But it's important to note that Oil & Gas industry only has one company included in the ranking. So in reality Oil & Gas industry may not have the highest customer satisfaction rating. So Automotive has the highest average customer satisfaction rating.
+
+Innovation
+```{r, echo=FALSE}
+industry_average %>% 
+  mutate(sector = reorder(sector, innovation_mean, decreasing = TRUE)) %>% 
+  ggplot(aes(x = sector, y = innovation_mean)) +
+  geom_col() +
+  geom_errorbar(aes(ymin = innovation_mean - innovation_sd,
+                    ymax = innovation_mean + innovation_sd,
+                    width = 0.5)) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylab("Innovation") +
+  xlab("Industry")
+```
+In the innovation rating scales, Telecommunication services has the highest average rating followed by leisure/arts/hospitality and technology. 
+
 

@@ -23,7 +23,7 @@ top_ten <- df %>%
   subset(rank <=10)
 
 df %>% 
-  group_by(sector) %>% count()
+  group_by(sector) %>% count() %>% print(n =22)
 
 # Does the overall_score differ across various industries?
 table(df$sector)
