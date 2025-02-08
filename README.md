@@ -1,2 +1,2 @@
 # WSJ250
-As part of my research internship with JUST Capital, I looked at top 250 companies according to Wall Street Journal, and anlayzed some of their performance metrics and ranking with those published by JUST Capital rankings 2023.
+During my research internship at JUST Capital, I analyzed performance metrics of the top 250 companies ranked by the Wall Street Journal, comparing their standings with the 2023 JUST Capital rankings.
